@@ -8,14 +8,14 @@
 // @grant        none
 // ==/UserScript==
 
-(function() {
-    'use strict';
+(function () {
+  "use strict";
 
-    function createDynamicStyles() {
-        const style = document.createElement('style');
-        style.type = 'text/css';
+  function createDynamicStyles() {
+    const style = document.createElement("style");
+    style.type = "text/css";
 
-        const css = `
+    const css = `
     .cll-alert.gmblr-alert {
       background: #171819;
       border: none;
@@ -58,91 +58,100 @@
     }
   `;
 
-        style.innerHTML = css;
-        document.head.appendChild(style);
+    style.innerHTML = css;
+    document.head.appendChild(style);
+  }
+
+  function newContent(alert, content) {
+    const contentText = content.textContent;
+
+    const [message, user] = contentText.split("//");
+
+    const userSpan = document.createElement("span");
+    userSpan.textContent = user.trim() + ":";
+    userSpan.classList.add("gmblr-alert-username");
+
+    const messageSpan = document.createElement("span");
+    messageSpan.textContent = message.trim();
+    messageSpan.classList.add("gmblr-alert-message");
+
+    const messageDiv = document.createElement("div");
+
+    messageDiv.appendChild(userSpan);
+    messageDiv.appendChild(messageSpan);
+    messageDiv.classList.add("gmblr-alert-content");
+
+    content.remove();
+
+    alert.querySelector(".cll-alert-header").after(messageDiv);
+  }
+
+  function addTimeToAlert(alert) {
+    if (alert.querySelector(".gmblr-alert-time")) return;
+
+    const now = new Date();
+    const padL = (nr, len = 2, chr = `0`) => `${nr}`.padStart(2, chr);
+
+    const dateSpan = document.createElement("span");
+    dateSpan.textContent = `${padL(now.getHours())}:${padL(now.getMinutes())}`;
+
+    dateSpan.classList.add("gmblr-alert-time");
+    alert.appendChild(dateSpan);
+  }
+
+  function ignoreUser(alert) {
+    const contentText = alert.querySelector(".cll-alert-content").textContent;
+    const [message, user] = contentText.split("//");
+
+    if (user !== "skripto") return;
+
+    const hideButton = alert.querySelector("#cll-ok");
+    const hideFunction = hideButton.onclick;
+
+    hideFunction();
+  }
+
+  function addStyleToAlert(alert) {
+    alert.classList.add("gmblr-alert");
+
+    const header = alert.querySelector(".cll-alert-header");
+    if (header) {
+      header.classList.add("gmblr-alert-header");
     }
 
-    function newContent(alert, content){
-        const contentText = content.textContent;
-
-        const [message, user] = contentText.split('//');
-
-        const userSpan = document.createElement('span')
-        userSpan.textContent = user.trim() + ":";
-        userSpan.classList.add('gmblr-alert-username');
-
-        const messageSpan = document.createElement('span')
-        messageSpan.textContent = message.trim();
-        messageSpan.classList.add('gmblr-alert-message');
-
-        const messageDiv = document.createElement('div')
-
-        messageDiv.appendChild(userSpan)
-        messageDiv.appendChild(messageSpan)
-        messageDiv.classList.add('gmblr-alert-content');
-
-        content.remove();
-
-        alert.querySelector('.cll-alert-header').after(messageDiv)
+    const message = alert.querySelector(".cll-alert-content");
+    if (message) {
+      message.classList.add("gmblr-alert-content");
+      newContent(alert, message);
     }
 
-    function addTimeToAlert(alert){
+    const buttons = alert.querySelector(".cll-alert-buttons").querySelectorAll("button");
+    buttons.forEach((button) => {
+      button.classList.add("gmblr-alert-button");
+    });
+  }
 
-        if(alert.querySelector(".gmblr-alert-time")) return
-
-        const now = new Date();
-        const padL = (nr, len = 2, chr = `0`) => `${nr}`.padStart(2, chr);
-
-        const dateSpan = document.createElement('span')
-        dateSpan.textContent = `${
-    padL(now.getHours())}:${
-    padL(now.getMinutes())}`
-
-        dateSpan.classList.add('gmblr-alert-time');
-        alert.appendChild(dateSpan)
-    }
-
-    function addStyleToAlert(alert) {
-        alert.classList.add('gmblr-alert');
-
-        const header = alert.querySelector('.cll-alert-header');
-        if (header) {
-            header.classList.add('gmblr-alert-header');
+  function init() {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === "childList") {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === 1 && node.classList.contains("cll-alert")) {
+              addStyleToAlert(node);
+              addTimeToAlert(node);
+              ignoreUser(node);
+            }
+          });
         }
+      });
+    });
 
+    const config = { childList: true, subtree: true };
+    const body = document.body;
 
-        const message = alert.querySelector('.cll-alert-content');
-        if (message) {
-            message.classList.add('gmblr-alert-content');
-            newContent(alert, message)
-        }
+    observer.observe(body, config);
+  }
 
-        const buttons = alert.querySelector('.cll-alert-buttons').querySelectorAll('button');
-        buttons.forEach((button) => {
-            button.classList.add('gmblr-alert-button');
-        });
-    }
-
-    function init(){
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if(mutation.type === "childList"){
-                    mutation.addedNodes.forEach((node) => {
-                        if(node.nodeType === 1 && node.classList.contains("cll-alert")){
-                            addStyleToAlert(node)
-                            addTimeToAlert(node)
-                        }
-                    })
-                }
-            })
-        })
-
-        const config = {childList: true, subtree: true}
-        const body = document.body
-
-        observer.observe(body, config)
-    }
-
-    createDynamicStyles();
-    init();
+  createDynamicStyles();
+  init();
 })();
