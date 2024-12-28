@@ -29,7 +29,6 @@
     }
 
     .gmblr-alert-content {
-    display: flex;
     justify-content: center;
     gap: 8px;
       color: rgba(255, 255, 255, 0.4);
@@ -56,25 +55,80 @@
     .cll-alert-buttons .gmblr-alert-button:hover {
       background: rgba(255, 26, 26, 0.6);
     }
+
+    .gmblr-ignore-menu{
+        position: absolute;
+        z-index: 420;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #171819;
+        padding: 16px;
+        color: #FFF;
+        font-size: 14px;
+        border-radius: 8px;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
   `;
 
     style.innerHTML = css;
     document.head.appendChild(style);
   }
 
-  function ignoreUser(alert, user) {
-    if (user !== "skripto") return;
+  function ignoreUser(alert, user, message) {
+    const ignoredUsers = localStorage.getItem("gmblr-ignore-ll-players").split(",");
+
+    if (!ignoredUsers.includes(user)) return;
+    const formattedMessage = message;
 
     const hideButton = alert.querySelector("#cll-ok");
     hideButton.click();
   }
+
+  const saveIgnoreList = () => {
+    const ignorePlayersInput = document.getElementById("ll-ignore-player");
+    const ignoreMessagesInput = document.getElementById("ll-ignore-messages");
+
+    localStorage.setItem("gmblr-ignore-ll-players", ignorePlayersInput.value);
+    localStorage.setItem("gmblr-ignore-ll-messages", ignoreMessagesInput.value);
+  };
+
+  const showIgnoreMenu = () => {
+    const ignoreMenu = document.createElement("div");
+    ignoreMenu.classList.add("gmblr-ignore-menu");
+
+    ignoreMenu.innerHTML += "<h1>Ignore Menu</h1>";
+    ignoreMenu.innerHTML += "Nicknames (nick,nick2)";
+
+    const inputIgnorePlayers = document.createElement("input");
+    inputIgnorePlayers.id = "ll-ignore-player";
+    ignoreMenu.appendChild(inputIgnorePlayers);
+
+    ignoreMenu.innerHTML += "Messages (message,new message,message2)";
+
+    const inputIgnoreMessages = document.createElement("input");
+    inputIgnoreMessages.id = "ll-ignore-messages";
+    ignoreMenu.appendChild(inputIgnoreMessages);
+
+    const button = document.createElement("button");
+    button.innerHTML = "Zapisz";
+    button.onclick = saveIgnoreList;
+
+    ignoreMenu.appendChild(button);
+
+    document.body.appendChild(ignoreMenu);
+  };
 
   function newContent(alert, content) {
     const contentText = content.textContent;
 
     const [message, user] = contentText.split("//");
 
-    ignoreUser(alert, user);
+    //ignoreUser(alert, user, message);
 
     const userSpan = document.createElement("span");
     userSpan.textContent = user.trim() + ":";
@@ -89,6 +143,7 @@
     messageDiv.appendChild(userSpan);
     messageDiv.appendChild(messageSpan);
     messageDiv.classList.add("gmblr-alert-content");
+    messageDiv.style.display = "flex";
 
     content.remove();
 
@@ -149,5 +204,6 @@
   }
 
   createDynamicStyles();
+  //showIgnoreMenu();
   init();
 })();
