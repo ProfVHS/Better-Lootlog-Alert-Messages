@@ -62,10 +62,19 @@
     document.head.appendChild(style);
   }
 
+  function ignoreUser(alert, user) {
+    if (user !== "skripto") return;
+
+    const hideButton = alert.querySelector("#cll-ok");
+    hideButton.click();
+  }
+
   function newContent(alert, content) {
     const contentText = content.textContent;
 
     const [message, user] = contentText.split("//");
+
+    ignoreUser(alert, user);
 
     const userSpan = document.createElement("span");
     userSpan.textContent = user.trim() + ":";
@@ -99,18 +108,6 @@
     alert.appendChild(dateSpan);
   }
 
-  function ignoreUser(alert) {
-    const contentText = alert.querySelector(".cll-alert-content").textContent;
-    const [message, user] = contentText.split("//");
-
-    if (user !== "skripto") return;
-
-    const hideButton = alert.querySelector("#cll-ok");
-    const hideFunction = hideButton.onclick;
-
-    hideFunction();
-  }
-
   function addStyleToAlert(alert) {
     alert.classList.add("gmblr-alert");
 
@@ -139,7 +136,6 @@
             if (node.nodeType === 1 && node.classList.contains("cll-alert")) {
               addStyleToAlert(node);
               addTimeToAlert(node);
-              ignoreUser(node);
             }
           });
         }
