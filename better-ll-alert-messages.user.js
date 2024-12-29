@@ -56,6 +56,24 @@
       background: rgba(255, 26, 26, 0.6);
     }
 
+    .gmblr-button {
+      background: rgba(253, 75, 75, 0.6);
+      box-shadow: 0px 4px 0px rgba(0, 0, 0, 0.8);
+      border-radius: 4px;
+      transition: 0.1s ease;
+      font-size: 11px;
+      border: none;
+      padding: 7px 13px 4px;
+      cursor: pointer;
+      outline: none;
+      color: white;
+      margin-top: 8px;
+    }
+
+    .gmblr-button:hover {
+      background: rgba(255, 26, 26, 0.6);
+    }
+
     .gmblr-ignore-menu{
         position: absolute;
         z-index: 420;
@@ -80,14 +98,30 @@
   }
 
   function ignoreUser(alert, user, message) {
-    const ignoredUsers = localStorage.getItem("gmblr-ignore-ll-players").split(",");
+    const ignoredUsers = localStorage.getItem("gmblr-ignore-ll-players").toLowerCase().split(",");
+    const ignoredMessages = localStorage.getItem("gmblr-ignore-ll-messages").toLowerCase().split(",");
 
-    if (!ignoredUsers.includes(user)) return;
-    const formattedMessage = message;
+    if (!ignoredUsers.includes(user.toLowerCase())) return;
+    const formattedMessage = message.toLowerCase();
+    if (!ignoredMessages.includes(formattedMessage)) return;
 
     const hideButton = alert.querySelector("#cll-ok");
     hideButton.click();
   }
+
+  const addButtonToGameLayer = () => {
+    const gameLayer = document.querySelector(".game-layer");
+
+    const ignoreMenuButton = document.createElement("div");
+    ignoreMenuButton.classList.add("cll-launcher");
+    ignoreMenuButton.style.bottom = "85px";
+    ignoreMenuButton.textContent = "I";
+    ignoreMenuButton.onclick = () => {
+      showIgnoreMenu();
+    };
+
+    gameLayer.appendChild(ignoreMenuButton);
+  };
 
   const saveIgnoreList = () => {
     const ignorePlayersInput = document.getElementById("ll-ignore-player");
@@ -114,11 +148,20 @@
     inputIgnoreMessages.id = "ll-ignore-messages";
     ignoreMenu.appendChild(inputIgnoreMessages);
 
-    const button = document.createElement("button");
-    button.innerHTML = "Zapisz";
-    button.onclick = saveIgnoreList;
+    const saveButton = document.createElement("button");
+    saveButton.innerHTML = "Zapisz";
+    saveButton.onclick = saveIgnoreList;
+    saveButton.className = "gmblr-button";
 
-    ignoreMenu.appendChild(button);
+    const exitButton = document.createElement("button");
+    exitButton.innerHTML = "Zamknij";
+    exitButton.onclick = () => {
+      ignoreMenu.remove();
+    };
+    exitButton.className = "gmblr-button";
+
+    ignoreMenu.appendChild(saveButton);
+    ignoreMenu.appendChild(exitButton);
 
     document.body.appendChild(ignoreMenu);
   };
@@ -128,7 +171,9 @@
 
     const [message, user] = contentText.split("//");
 
-    //ignoreUser(alert, user, message);
+    if (!user || !message) return;
+
+    ignoreUser(alert, user, message);
 
     const userSpan = document.createElement("span");
     userSpan.textContent = user.trim() + ":";
@@ -204,6 +249,6 @@
   }
 
   createDynamicStyles();
-  //showIgnoreMenu();
+  addButtonToGameLayer();
   init();
 })();
