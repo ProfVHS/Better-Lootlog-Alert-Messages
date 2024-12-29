@@ -98,6 +98,8 @@
   }
 
   function ignoreUser(alert, user, message) {
+    if (!localStorage.getItem("gmblr-ignore-ll-players") || !localStorage.getItem("gmblr-ignore-ll-messages")) return;
+
     const ignoredUsers = localStorage.getItem("gmblr-ignore-ll-players").toLowerCase().split(",");
     const ignoredMessages = localStorage.getItem("gmblr-ignore-ll-messages").toLowerCase().split(",");
 
