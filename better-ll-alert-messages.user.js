@@ -103,9 +103,8 @@
     const ignoredUsers = localStorage.getItem("gmblr-ignore-ll-players").toLowerCase().split(",");
     const ignoredMessages = localStorage.getItem("gmblr-ignore-ll-messages").toLowerCase().split(",");
 
-    if (!ignoredUsers.includes(user.toLowerCase())) return;
     const formattedMessage = message.toLowerCase();
-    if (!ignoredMessages.includes(formattedMessage)) return;
+    if (!ignoredUsers.includes(user.toLowerCase()) && !ignoredMessages.includes(formattedMessage)) return;
 
     const hideButton = alert.querySelector("#cll-ok");
     hideButton.click();
